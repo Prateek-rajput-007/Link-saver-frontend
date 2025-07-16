@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+body {
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #ffffff;
+  color: #222;
+}
+
+.bookmark-card {
+  transition: transform 0.2s, background-color 0.3s, color 0.3s;
+}
+
+.bookmark-card:hover {
+  transform: scale(1.02);
+}
+
+.gradient-button {
+  background: linear-gradient(to right, #3b82f6, #8b5cf6);
+  transition: background 0.3s, box-shadow 0.3s, color 0.3s;
+}
+
+.gradient-button:hover:not(:disabled) {
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.gradient-button:disabled {
+  background: linear-gradient(to right, #6b7280, #9ca3af);
+  cursor: not-allowed;
+}
+
+.summary-dropdown {
+  max-height: 200px;
+  overflow-y: auto;
+  transition: max-height 0.3s ease-in-out, background-color 0.3s, border-color 0.3s;
+}
+
+.spinner {
+  border-top-color: #ffffff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark mode overrides */
+
+
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark .text-black {
+  color: #f3f4f6 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #374151 !important;
+}
+
+.dark .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: #1e3a8a !important;
+}
+
+.dark .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+.dark .summary-dropdown {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+.dark .text-blue-500 {
+  color: #3b82f6 !important;
+}
+
+.dark .text-red-500 {
+  color: #f87171 !important;
+}
+
+.dark .hover\:text-red-600:hover {
+  color: #ef4444 !important;
+}
+
+.dark .bg-red-500 {
+  background-color: #dc2626 !important;
+}
+
+.dark .hover\:bg-red-600:hover {
+  background-color: #b91c1c !important;
+}
