@@ -9,8 +9,6 @@ import ThemeContext from '../context/ThemeContext';
 
 function Dashboard() {
   const [bookmarks, setBookmarks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const { theme } = useContext(ThemeContext);
   const { user, logout, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
@@ -23,36 +21,27 @@ function Dashboard() {
     }
 
     const fetchBookmarks = async () => {
-      setIsLoading(true);
-      setError(null);
       try {
         const res = await axios.get('https://link-saver-drab.vercel.app/api/bookmarks', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
 
-        // Ensure response data is an array
-        const data = res.data;
-        if (!Array.isArray(data)) {
-          console.warn('Expected array but received:', data);
-          setBookmarks([]);
-          setError('Invalid data format received from server');
-          return;
-        }
+        console.log('API response:', res.data);
+
+        // Handle different response structures
+        const data = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.data)
+          ? res.data.data
+          : [];
 
         setBookmarks(data);
       } catch (error) {
-        console.error('Error fetching bookmarks:', error);
-        const errorMessage = error.response?.data?.message || 
-                           error.message || 
-                           'Failed to load bookmarks';
-        setError(errorMessage);
-        
+        console.error('Error fetching bookmarks:', error.response?.data?.message || error.message);
         if (error.response?.status === 401) {
           logout();
           navigate('/login', { replace: true });
         }
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -60,32 +49,27 @@ function Dashboard() {
   }, [user, isAuthLoading, navigate, logout]);
 
   const handleAddBookmark = (bookmark, isUpdate = false) => {
-    try {
-      if (isUpdate) {
-        setBookmarks((prev) =>
-          prev.map((b) => (b._id === bookmark._id ? bookmark : b))
-        );
-      } else if (bookmark) {
-        setBookmarks((prev) => [...prev, bookmark]);
-      } else {
-        setBookmarks((prev) => prev.filter((b) => b._id !== bookmark._id));
-      }
-    } catch (err) {
-      console.error('Error updating bookmarks:', err);
-      setError('Failed to update bookmarks');
+    if (isUpdate) {
+      setBookmarks((prev) =>
+        prev.map((b) => (b._id === bookmark._id ? bookmark : b))
+      );
+    } else if (bookmark && bookmark._id) {
+      setBookmarks((prev) => [...prev, bookmark]);
+    } else if (bookmark && bookmark.deleteId) {
+      setBookmarks((prev) => prev.filter((b) => b._id !== bookmark.deleteId));
     }
   };
 
-  if (isAuthLoading || !user) return <div className="text-center p-8">Loading user data...</div>;
+  if (isAuthLoading || !user) return null;
 
   const bgColor = theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100';
-  const textColor = theme === 'dark' ? 'text-gray-200' : 'text-gray-800';
+  const headerColor = theme === 'dark' ? 'text-gray-200' : 'text-gray-800';
   const logoutBg = theme === 'dark' ? 'bg-red-600 hover:bg-red-500' : 'bg-red-500 hover:bg-red-600';
 
   return (
     <div className={`container mx-auto p-4 min-h-screen ${bgColor} transition-colors duration-300`}>
       <div className="flex justify-between items-center mb-6">
-        <h1 className={`text-3xl font-bold ${textColor}`}>Link Saver</h1>
+        <h1 className={`text-3xl font-bold ${headerColor}`}>Link Saver</h1>
         <div className="flex gap-4">
           <ThemeToggle />
           <button
@@ -99,29 +83,8 @@ function Dashboard() {
           </button>
         </div>
       </div>
-
-      {isLoading ? (
-        <div className="text-center p-8">Loading bookmarks...</div>
-      ) : error ? (
-        <div className={`p-4 mb-4 rounded-lg ${theme === 'dark' ? 'bg-red-900' : 'bg-red-100'} ${textColor}`}>
-          <p>{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-2 px-3 py-1 text-sm rounded hover:underline"
-          >
-            Try Again
-          </button>
-        </div>
-      ) : (
-        <>
-          <BookmarkForm onAdd={handleAddBookmark} />
-          <BookmarkList 
-            bookmarks={bookmarks} 
-            setBookmarks={setBookmarks} 
-            onError={(err) => setError(err)}
-          />
-        </>
-      )}
+      <BookmarkForm onAdd={handleAddBookmark} />
+      <BookmarkList bookmarks={bookmarks} setBookmarks={setBookmarks} />
     </div>
   );
 }
