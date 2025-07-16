@@ -10,7 +10,7 @@ function BookmarkCard({ bookmark, onDelete, onDragStart, onDragOver, onDrop }) {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/bookmarks/${bookmark._id}`, {
+      await axios.delete(`https://link-saver-backend-bi2u.onrender.com/api/bookmarks/${bookmark._id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       onDelete(bookmark._id);
