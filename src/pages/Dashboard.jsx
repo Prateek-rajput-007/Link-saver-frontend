@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BookmarkForm from '../components/BookmarkForm';
 import BookmarkList from '../components/BookmarkList';
-import TagSearch from '../components/TagSearch';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import ThemeContext from '../context/ThemeContext';
@@ -11,6 +10,7 @@ import ThemeContext from '../context/ThemeContext';
 function Dashboard() {
   const [bookmarks, setBookmarks] = useState([]);
   const [filteredBookmarks, setFilteredBookmarks] = useState([]);
+  const [tagSearch, setTagSearch] = useState('');
   const { theme } = useContext(ThemeContext);
   const { user, logout, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ function Dashboard() {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/bookmarks', {
+        const res = await axios.get('https://link-saver-drab.vercel.app/api/bookmarks', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setBookmarks(res.data);
@@ -40,6 +40,22 @@ function Dashboard() {
 
     fetchBookmarks();
   }, [user, isAuthLoading, navigate, logout]);
+
+  // Filter bookmarks based on tag search
+  useEffect(() => {
+    if (!tagSearch.trim()) {
+      setFilteredBookmarks(bookmarks);
+      return;
+    }
+    const searchTerms = tagSearch
+      .split(',')
+      .map((tag) => tag.trim().toLowerCase())
+      .filter((tag) => tag);
+    const filtered = bookmarks.filter((bookmark) =>
+      bookmark.tags?.some((tag) => searchTerms.some((term) => tag.toLowerCase().includes(term)))
+    );
+    setFilteredBookmarks(filtered);
+  }, [tagSearch, bookmarks]);
 
   const handleAddBookmark = (bookmark, isUpdate = false) => {
     if (isUpdate) {
@@ -82,8 +98,26 @@ function Dashboard() {
         </div>
       </div>
       <BookmarkForm onAdd={handleAddBookmark} />
-      <TagSearch bookmarks={bookmarks} setFilteredBookmarks={setFilteredBookmarks} />
-      <BookmarkList bookmarks={filteredBookmarks} setBookmarks={setFilteredBookmarks} />
+      <div>
+        <div className="mb-4">
+          <label
+            htmlFor="tagSearch"
+            className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300"
+          >
+            Search Tags (comma-separated)
+          </label>
+          <input
+            id="tagSearch"
+            type="text"
+            value={tagSearch}
+            onChange={(e) => setTagSearch(e.target.value)}
+            title="Enter tags separated by commas to filter bookmarks"
+            className="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-base focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-300"
+            placeholder="e.g., AI, Tech"
+          />
+        </div>
+        <BookmarkList bookmarks={filteredBookmarks} setBookmarks={setFilteredBookmarks} />
+      </div>
     </div>
   );
 }
