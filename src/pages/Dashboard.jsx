@@ -69,21 +69,37 @@ function Dashboard() {
   }, [tagSearch, bookmarks]);
 
   const handleAddBookmark = (bookmark, isUpdate = false) => {
-    if (isUpdate) {
+    if (isUpdate && bookmark) {
+      console.log('Updating bookmark:', bookmark);
       setBookmarks((prev) =>
         Array.isArray(prev) ? prev.map((b) => (b._id === bookmark._id ? bookmark : b)) : [bookmark]
       );
       setFilteredBookmarks((prev) =>
-        Array.isArray(prev) ? prev.map((b) => (b._id === bookmark._id ? bookmark : b)) : [bookmark]
+        Array.isArray(prev)
+          ? prev.map((b) => (b._id === bookmark._id ? bookmark : b))
+          : [bookmark]
       );
     } else if (bookmark) {
+      console.log('Adding bookmark:', bookmark);
       setBookmarks((prev) => (Array.isArray(prev) ? [...prev, bookmark] : [bookmark]));
-      setFilteredBookmarks((prev) => (Array.isArray(prev) ? [...prev, bookmark] : [bookmark]));
-    } else {
-      setBookmarks((prev) => (Array.isArray(prev) ? prev.filter((b) => b._id !== bookmark._id) : []));
-      setFilteredBookmarks((prev) =>
-        Array.isArray(prev) ? prev.filter((b) => b._id !== bookmark._id) : []
-      );
+      // Only add to filteredBookmarks if it matches the current tag filter
+      const searchTerms = tagSearch
+        .split(',')
+        .map((tag) => tag.trim().toLowerCase())
+        .filter((tag) => tag);
+      const bookmarkTags = Array.isArray(bookmark.tags) ? bookmark.tags : [];
+      const matchesFilter =
+        !searchTerms.length ||
+        bookmarkTags.some((tag) => searchTerms.some((term) => tag.toLowerCase().includes(term)));
+      if (matchesFilter) {
+        setFilteredBookmarks((prev) => (Array.isArray(prev) ? [...prev, bookmark] : [bookmark]));
+      }
+    } else if (bookmark?._id || bookmark?.tempId) {
+      // Handle delete case
+      const id = bookmark?._id || bookmark?.tempId;
+      console.log('Deleting bookmark with ID:', id);
+      setBookmarks((prev) => (Array.isArray(prev) ? prev.filter((b) => b._id !== id) : []));
+      setFilteredBookmarks((prev) => (Array.isArray(prev) ? prev.filter((b) => b._id !== id) : []));
     }
   };
 
