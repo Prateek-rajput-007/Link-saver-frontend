@@ -6,7 +6,6 @@ import BookmarkList from '../components/BookmarkList';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import ThemeContext from '../context/ThemeContext';
-import LoadingSpinner from '../components/LoadingSpinner';
 
 function Dashboard() {
   const [bookmarks, setBookmarks] = useState([]);
@@ -77,7 +76,7 @@ function Dashboard() {
     }
   };
 
-  if (isAuthLoading || !user) return <LoadingSpinner />;
+  if (isAuthLoading || !user) return <div className="text-center p-8">Loading user data...</div>;
 
   const bgColor = theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100';
   const textColor = theme === 'dark' ? 'text-gray-200' : 'text-gray-800';
@@ -102,9 +101,7 @@ function Dashboard() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center mt-8">
-          <LoadingSpinner />
-        </div>
+        <div className="text-center p-8">Loading bookmarks...</div>
       ) : error ? (
         <div className={`p-4 mb-4 rounded-lg ${theme === 'dark' ? 'bg-red-900' : 'bg-red-100'} ${textColor}`}>
           <p>{error}</p>
