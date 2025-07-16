@@ -174,7 +174,7 @@ function BookmarkList({ bookmarks, setBookmarks }) {
 
     try {
       await axios.put(
-        'http://localhost:5000/api/bookmarks/order',
+        'https://link-saver-backend-bi2u.onrender.com/api/bookmarks/order',
         { bookmarks: newBookmarks.map((b, index) => ({ _id: b._id, order: index })) },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
