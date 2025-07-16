@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BookmarkForm from '../components/BookmarkForm';
 import BookmarkList from '../components/BookmarkList';
+import TagSearch from '../components/TagSearch';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import ThemeContext from '../context/ThemeContext';
 
 function Dashboard() {
   const [bookmarks, setBookmarks] = useState([]);
+  const [filteredBookmarks, setFilteredBookmarks] = useState([]);
   const { theme } = useContext(ThemeContext);
   const { user, logout, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
@@ -22,10 +24,11 @@ function Dashboard() {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await axios.get('https://link-saver-backend-bi2u.onrender.com/api/bookmarks', {
+        const res = await axios.get('http://localhost:5000/api/bookmarks', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setBookmarks(res.data);
+        setFilteredBookmarks(res.data); // Initialize filteredBookmarks
       } catch (error) {
         console.error('Error fetching bookmarks:', error.response?.data?.message || error.message);
         if (error.response?.status === 401) {
@@ -43,10 +46,15 @@ function Dashboard() {
       setBookmarks((prev) =>
         prev.map((b) => (b._id === bookmark._id ? bookmark : b))
       );
+      setFilteredBookmarks((prev) =>
+        prev.map((b) => (b._id === bookmark._id ? bookmark : b))
+      );
     } else if (bookmark) {
       setBookmarks((prev) => [...prev, bookmark]);
+      setFilteredBookmarks((prev) => [...prev, bookmark]);
     } else {
       setBookmarks((prev) => prev.filter((b) => b._id !== bookmark._id));
+      setFilteredBookmarks((prev) => prev.filter((b) => b._id !== bookmark._id));
     }
   };
 
@@ -74,7 +82,8 @@ function Dashboard() {
         </div>
       </div>
       <BookmarkForm onAdd={handleAddBookmark} />
-      <BookmarkList bookmarks={bookmarks} setBookmarks={setBookmarks} />
+      <TagSearch bookmarks={bookmarks} setFilteredBookmarks={setFilteredBookmarks} />
+      <BookmarkList bookmarks={filteredBookmarks} setBookmarks={setFilteredBookmarks} />
     </div>
   );
 }
