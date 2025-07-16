@@ -216,7 +216,7 @@ function BookmarkForm({ onAdd }) {
 
     try {
       const res = await axios.post(
-        'http://localhost:5000/api/bookmarks',
+        'https://link-saver-backend-bi2u.onrender.com/api/bookmarks',
         { url, tags: optimisticBookmark.tags },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
