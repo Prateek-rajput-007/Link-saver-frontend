@@ -22,7 +22,7 @@ function Dashboard() {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/bookmarks', {
+        const res = await axios.get('https://link-saver-backend-bi2u.onrender.com/api/bookmarks', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setBookmarks(res.data);
