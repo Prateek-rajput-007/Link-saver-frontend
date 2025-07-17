@@ -22,13 +22,17 @@ function Dashboard() {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await axios.get('https://link-saver-drab.vercel.app/api/bookmarks', {
+        const res = await axios.get('https://link-saver-backend-bi2u.onrender.com/api/bookmarks', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         // Ensure bookmarks is an array
         setBookmarks(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
-        console.error('Error fetching bookmarks:', error.response?.data?.message || error.message);
+        console.error('Error fetching bookmarks:', {
+          message: error.response?.data?.message || error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
         if (error.response?.status === 401) {
           logout();
           navigate('/login', { replace: true });
@@ -42,14 +46,20 @@ function Dashboard() {
   }, [user, isAuthLoading, navigate, logout]);
 
   const handleAddBookmark = (bookmark, isUpdate = false) => {
-    if (isUpdate) {
+    if (isUpdate && bookmark) {
+      console.log('Updating bookmark:', bookmark);
       setBookmarks((prev) =>
-        prev.map((b) => (b._id === bookmark._id ? bookmark : b))
+        Array.isArray(prev)
+          ? prev.map((b) => ((b._id === bookmark._id || b._id === bookmark.tempId) ? { ...bookmark, _id: bookmark._id } : b))
+          : [bookmark]
       );
     } else if (bookmark) {
-      setBookmarks((prev) => [...prev, bookmark]);
-    } else {
-      setBookmarks((prev) => prev.filter((b) => b._id !== bookmark._id));
+      console.log('Adding bookmark:', bookmark);
+      setBookmarks((prev) => (Array.isArray(prev) ? [...prev, bookmark] : [bookmark]));
+    } else if (bookmark?._id || bookmark?.tempId) {
+      const id = bookmark._id || bookmark.tempId;
+      console.log('Deleting bookmark with ID:', id);
+      setBookmarks((prev) => (Array.isArray(prev) ? prev.filter((b) => b._id !== id) : []));
     }
   };
 
