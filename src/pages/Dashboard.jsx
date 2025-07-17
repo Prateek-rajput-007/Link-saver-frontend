@@ -22,15 +22,18 @@ function Dashboard() {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await axios.get('https://link-saver-drab.vercel.app/login/api/bookmarks', {
+        const res = await axios.get('https://link-saver-drab.vercel.app/api/bookmarks', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        setBookmarks(res.data);
+        // Ensure bookmarks is an array
+        setBookmarks(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.error('Error fetching bookmarks:', error.response?.data?.message || error.message);
         if (error.response?.status === 401) {
           logout();
           navigate('/login', { replace: true });
+        } else {
+          setBookmarks([]);
         }
       }
     };
