@@ -22,20 +22,10 @@ function Dashboard() {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await axios.get('https://link-saver-backend-bi2u.onrender.com/api/bookmarks', {
+        const res = await axios.get('https://link-saver-drab.vercel.app/login/api/bookmarks', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-
-        console.log('Fetched bookmarks:', res.data);
-
-        // Defensive fallback
-        const data = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data?.data)
-          ? res.data.data
-          : [];
-
-        setBookmarks(data);
+        setBookmarks(res.data);
       } catch (error) {
         console.error('Error fetching bookmarks:', error.response?.data?.message || error.message);
         if (error.response?.status === 401) {
@@ -49,14 +39,14 @@ function Dashboard() {
   }, [user, isAuthLoading, navigate, logout]);
 
   const handleAddBookmark = (bookmark, isUpdate = false) => {
-    if (!bookmark) return;
-
     if (isUpdate) {
       setBookmarks((prev) =>
         prev.map((b) => (b._id === bookmark._id ? bookmark : b))
       );
-    } else {
+    } else if (bookmark) {
       setBookmarks((prev) => [...prev, bookmark]);
+    } else {
+      setBookmarks((prev) => prev.filter((b) => b._id !== bookmark._id));
     }
   };
 
@@ -83,7 +73,6 @@ function Dashboard() {
           </button>
         </div>
       </div>
-
       <BookmarkForm onAdd={handleAddBookmark} />
       <BookmarkList bookmarks={bookmarks} setBookmarks={setBookmarks} />
     </div>
